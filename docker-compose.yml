@@ -1,0 +1,26 @@
+services:
+  vscode:
+    build: ./vscode
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./repos:/workspace
+    environment:
+      - PASSWORD=${VSCODE_PASSWORD}
+    networks:
+      - dev-net
+
+  pycharm:
+    build: ./pycharm
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./repos:/workspace
+    environment:
+      - PYCHARM_LICENSE_KEY=${PYCHARM_LICENSE_KEY}
+    networks:
+      - dev-net
+
+networks:
+  dev-net:
+    driver: bridge

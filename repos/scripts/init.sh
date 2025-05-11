@@ -18,7 +18,7 @@ if ! command -v docker-compose &> /dev/null; then
 fi
 
 # 3️⃣ Pull the latest dev_environment repository
-REPO_URL="https://github.com/YOUR_USERNAME/dev_environment.git"
+REPO_URL="https://github.com/Y4ng0/dev_environment"
 CLONE_DIR="$HOME/dev_environment"
 
 if [ -d "$CLONE_DIR" ]; then
