@@ -2,7 +2,7 @@
 
 echo "🚀 Starting setup..."
 
-# 1️⃣ Install Docker if not installed
+# 1️⃣ Check if Docker is installed
 if ! command -v docker &> /dev/null; then
     echo "🐳 Docker not found. Installing..."
     curl -fsSL https://get.docker.com | sh
@@ -10,7 +10,7 @@ if ! command -v docker &> /dev/null; then
     newgrp docker
 fi
 
-# 2️⃣ Install Docker Compose if not installed
+# 2️⃣ Check if Docker Compose is installed
 if ! command -v docker-compose &> /dev/null; then
     echo "🔧 Docker Compose not found. Installing..."
     sudo apt-get update
@@ -18,7 +18,7 @@ if ! command -v docker-compose &> /dev/null; then
 fi
 
 # 3️⃣ Pull the latest dev_environment repository
-REPO_URL="https://github.com/Y4ng0/dev_environment"
+REPO_URL="https://github.com/YOUR_USERNAME/dev_environment.git"
 CLONE_DIR="$HOME/dev_environment"
 
 if [ -d "$CLONE_DIR" ]; then
@@ -29,22 +29,36 @@ else
     git clone $REPO_URL "$CLONE_DIR"
 fi
 
-# 4️⃣ Navigate to the dev_environment folder
 cd "$CLONE_DIR"
 
-# 5️⃣ Install Infisical CLI if not installed
-if ! command -v infisical &> /dev/null; then
-    echo "🔒 Installing Infisical CLI..."
-    npm install -g infisical
+# 4️⃣ ✅ Environment Variable Check
+echo "🔍 Checking required environment variables..."
+REQUIRED_VARS=("INFISICAL_PROJECT_ID" "INFISICAL_ENV" "INFISICAL_TOKEN")
+MISSING_VARS=()
+
+for VAR in "${REQUIRED_VARS[@]}"; do
+    if ! grep -q "$VAR" .env; then
+        MISSING_VARS+=("$VAR")
+    fi
+done
+
+if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+    echo "❌ Missing environment variables in .env:"
+    for VAR in "${MISSING_VARS[@]}"; do
+        echo "   - $VAR"
+    done
+    echo "Please add them to the .env file and rerun the script."
+    exit 1
 fi
 
-# 6️⃣ Login to Infisical and pull secrets
+# 5️⃣ Login to Infisical and pull secrets
 echo "🔑 Logging into Infisical..."
-infisical login
-echo "🌐 Pulling environment secrets from Infisical..."
-infisical env pull --env=dev --format=dotenv > .env
+infisical login --token $INFISICAL_TOKEN
 
-# 7️⃣ Clone predefined repositories
+echo "🌐 Pulling environment secrets from Infisical..."
+infisical env pull --env=$INFISICAL_ENV --format=dotenv > .env
+
+# 6️⃣ Clone predefined repositories
 echo "📁 Cloning repositories..."
 mkdir -p repos
 cd repos
@@ -59,12 +73,12 @@ for repo in "${REPOS[@]}"; do
     fi
 done
 
-# 8️⃣ Build and start Docker Compose
+# 7️⃣ Build and start Docker Compose
 cd "$CLONE_DIR"
 echo "🐋 Building Docker containers..."
 docker-compose up --build -d
 
-# 9️⃣ Output services
+# 8️⃣ Output services
 echo "✅ Setup Complete!"
 echo "VSCode → http://localhost:8443"
 echo "PyCharm (VNC) → http://localhost:8888"
